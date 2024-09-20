@@ -7,6 +7,8 @@
 #include "GameFramework/PlayerController.h"
 #include "PongPlayerController.generated.h"
 
+
+class UUserWidget;
 /**
  * 
  */
@@ -20,11 +22,62 @@ protected:
 
 public:
 	virtual void SetupInputComponent() override;
-	void SetupPlayerCamera();
+	/*
+	* Function that updates ControlledPaddle pointer, because it should be set after execution of HandleStartingNewPlayer_Implementation in APongGameModeBase
+	* It is used to avoid casting to the APongPaddlePawn in the Move function which is called every frame while input is pressed.
+	* Getting Pawn is necessary due to the implementation of movement inside the controller class as it is said in the task, instead of implementing it in the pawn class
+	*/
+	void UpdateControlledPaddle();
 
+	UFUNCTION(Client, Reliable)
+	void DisplayWaitingMessage();
+
+	UFUNCTION(Client, Reliable)
+	void RemoveWaitingMessage();
+
+	UFUNCTION(Client, Reliable)
+	void DisplayTimerWidget(float RemainingTime);
+	void RemoveTimerWidget();
+
+	UFUNCTION(Client, Reliable)
+	void DisplayScoreWidget();
+	UFUNCTION(Client, Reliable)
+	void RemoveScoreWidget();
+
+	UFUNCTION(Client, Reliable)
+	void DisplayGameOverWidget(bool bHasWon);
+	UFUNCTION(Client, Reliable)
+	void RemoveGameOverWidget();
+
+	UFUNCTION(Client, Reliable)
+	void OnScoreChanged(int ScorePlayer0, int ScorePlayer1);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateScoreDisplay(int ScorePlayer0, int ScorePlayer1);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetGameOverMessage(bool bHasWon);
+
+	UFUNCTION(Client, Reliable)
+	void SetCamera(AActor* CameraActor);
+
+	UFUNCTION(BlueprintCallable)
+	float GetStartTimerRemainigTime();
+
+	UFUNCTION(BlueprintCallable)
+	UUserWidget* GetScoreWidget();
+
+	UFUNCTION(BlueprintCallable)
+	UUserWidget* GetGameOverWidget();
 	
 protected:
-	void Move(const FInputActionValue& Value);
+	void MoveSideways(const FInputActionValue& Value);
+	void Move(const float Value);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerMove(const float Value);
+
+
 
 
 protected:
@@ -43,8 +96,28 @@ protected:
 	float MovementSpeed = 200.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-	FVector MinBoundary;
+	float MinBoundary;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-	FVector MaxBoundary;
-	
+	float MaxBoundary;
+
+	/*========== UI ==========*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> WaitingMessageWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> TimerWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> ScoreWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
+
+	UUserWidget* WaitingMessageWidgetInstance;
+	UUserWidget* TimerWidgetInstance;
+	UUserWidget* ScoreWidgetInstance;
+	UUserWidget* GameOverWidgetInstance;
+
+
+	FTimerHandle TimerHandle_GameStart;
 };

@@ -22,5 +22,28 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void Launch();
+
+protected:
+	void OnHit(const FHitResult& Hit);
+	void BounceOfWall(const FVector& HitNormal);
+	void BounceOfPaddle(const FVector& HitNormal, const float DistanceFromOrigin);
+
+protected:
+	/*========== COMPONENTS ==========*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	class UStaticMeshComponent* SphereComp;
+
+	/*========== PROPERTIES ==========*/	  // TODO: Put in component
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
+	float Speed;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
+	FVector InitialDirection;
+
+	UPROPERTY(VisibleAnywhere, Category = "Properties")
+	FVector Velocity;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
+	float BounceFactor;
 
 };

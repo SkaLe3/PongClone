@@ -13,6 +13,7 @@ APongPaddlePawn::APongPaddlePawn()
 	MeshComp->SetupAttachment(BoxComp);
 
 	bReplicates = true;
+	SetReplicateMovement(true);
 }
 
 // Called when the game starts or when spawned
